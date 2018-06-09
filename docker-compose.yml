@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  sqldb:
+    networks:
+        - backend
+    build: ./sqldb
+
+  mongo:
+    networks:
+        - backend
+    build: ./mongo
+
+  redis:
+    networks:
+        - backend
+    build: ./redis
+    
+  web:
+    networks:
+        - backend
+        - frontend
+    depends_on:
+        - sqldb
+        - mongo
+        - redis
+    build: ./web
+    restart: always
+    stdin_open: true
+    tty: true
+    command: /usr/local/bin/uwsgi --ini app.ini
+
+  nginx:
+    networks:
+        - frontend
+    depends_on:
+        - sqldb
+        - mongo
+        - redis
+        - web
+    build: ./nginx
+    ports:
+        - "80:80"
+    restart: always
+    
+networks:
+    backend:
+        driver: bridge
+    frontend:
+        driver: bridge

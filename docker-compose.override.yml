@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  sqldb:
+    networks:
+        - backend
+    build: ./sqldb
+
+  mongo:
+    networks:
+        - backend
+    build: ./mongo
+
+  redis:
+    networks:
+        - backend
+    build: ./redis
+
+  web:
+    networks:
+        - backend
+    build: ./web
+    depends_on:
+        - sqldb
+        - mongo
+        - redis
+    restart: always
+    ports:
+        - "5000:5000"
+    volumes:
+        - ./web:/home/flask/app/web
+    command: python app.py
+    stdin_open: true
+    tty: true
+
+networks:
+    backend:
+        driver: bridge
